@@ -13,7 +13,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
-
+import { db } from './firebase';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 // ─── Constants ───────────────────────────────────────────────
 
 const BRISTOL_DATA = [
@@ -454,19 +455,34 @@ function HomePage({ logs, onLog }) {
     setShowLog(true)
   }
 
-  function handleSave(bristol) {
-    const newLog  = { ts: Date.now(), bristol }
-    const updated = [newLog, ...logs]
-    saveLogs(updated)
-    onLog(updated)
-    setShowLog(false)
-    // Show share modal with fresh stats
-    setShareData({
-      log:        newLog,
-      streak:     calcStreak(updated),
-      totalToday: todayCount(updated),
-    })
+  async function handleSave(bristol) {
+  const newLog = { ts: Date.now(), bristol };
+  
+  // Update local state so UI is fast
+  const updated = [newLog, ...logs];
+  saveLogs(updated);
+  onLog(updated);
+  setShowLog(false);
+
+  // --- SEND TO FIREBASE ---
+  try {
+    await addDoc(collection(db, "user_logs"), {
+      bristol: bristol,
+      timestamp: serverTimestamp(),
+      // Helps you distinguish who is logging during testing
+      userAgent: navigator.userAgent 
+    });
+    console.log("Cloud log successful! 💩☁️");
+  } catch (error) {
+    console.error("Firebase Error:", error);
   }
+
+  setShareData({
+    log: newLog,
+    streak: calcStreak(updated),
+    totalToday: todayCount(updated),
+  });
+}
 
   function handleReset() {
     if (!window.confirm('Reset all logs? This will clear your history permanently.')) return
