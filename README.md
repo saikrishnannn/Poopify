@@ -1,4 +1,4 @@
-# Poopify 💩
+# Poopify 💩 https://poopify-0.web.app/
 ### *The "Quantified Self" app you never knew you needed.*
 
 Poopify turns your daily "output" into a gamified experience. From tracking streaks to generating your "Annual Poopy Wrapped," Poopify combines health insights with the hilarity of social competition.
